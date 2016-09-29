@@ -1,0 +1,12 @@
+{
+  "name": "webtalk",
+  "version": "0.0.1",
+  "description": "",
+  "author": "nestattacked",
+  "dependencies": {
+    "crypto": "0.0.3",
+    "express": "^4.14.0",
+    "mongodb": "^2.2.10",
+    "socket.io": "^1.4.8"
+  }
+}
