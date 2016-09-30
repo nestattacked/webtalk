@@ -3,6 +3,7 @@ var crypto = require('crypto');
 
 //global socket pool with key of email
 var sockets = {};
+//avatar and emotion counts
 var avatar_counts = 10;
 var emotion_counts = 10;
 
@@ -17,6 +18,7 @@ var io = require('socket.io')(http);
 io.on('connection',function(socket){
 	var user_email = '';
 	var user_token = '';
+	//true friend not include confirming status
 	var friends = [];
 
 	//token check function
@@ -44,13 +46,13 @@ io.on('connection',function(socket){
 				socket.emit('register_res',{'res':false});
 			else
 				users.insertMany([{'email':data.email,'name':data.name,'password':data.password,'avatar':1}],function(err,result){
-				if(err)
-					socket.emit('register_res',{'res':false});
-				else
-					socket.emit('register_res',{'res':true});
+					if(err)
+						socket.emit('register_res',{'res':false});
+					else
+						socket.emit('register_res',{'res':true});
 				});
-			});
 		});
+	});
 
 	//login handler
 	socket.on('login',function(data){
@@ -87,6 +89,9 @@ io.on('connection',function(socket){
 	//todo
 	//get information by given number
 	socket.on('get_info',function(data){
+	});
+	//todo
+	socket.on('get_unread_info',function(data){
 	});
 
 	//todo
@@ -131,16 +136,103 @@ io.on('connection',function(socket){
 		}
 	});
 
-	//todo
 	socket.on('add_friend',function(data){
+		if(checkToken(data.token)){
+			var infos = global_db.collection('infos');
+			var from = user_email>data.email?user_email:data.email;
+			var to = user_email>data.email?data.email:user_email;
+			infos.find({'from':from,'to':to}).toArray(function(err,docs){
+				if(err||docs.length!==0){
+						socket.emit('add_friend_res',{'res':false});
+					}
+				else{
+					var requests = global_db.collection('requests');
+					requests.find({'giver':data.email,'accepter':user_email}).toArray(function(err,docs){
+						if(err)
+							socket.emit('add_friend_res',{'res':false});
+						//if the person you want to add has alreay want you
+						else if(docs.length===1){
+							//add friend to infos
+							infos.insertMany([{'from':from,'to':to,from_unread:0,to_unread:0,infos:[]}],function(err,result){
+								if(err)
+									socket.emit('add_friend_res',{'res':false});
+								else{
+									//and remove other request
+									requests.deleteOne({'giver':data.email,'accepter':user_email},function(err,result){
+										if(err)
+											socket.emit('add_friend_res',{'res':false});
+										else
+											var users = global_db.collection('users');
+											users.find({'email':data.email}).toArray(function(err,docs){
+												//i don't want to handle error anymore, the code shouldn't be writen like this
+												//actually, server code has a lot of problem
+												var obj = docs[0];
+												delete obj.password;
+												obj.unread = 0;
+												obj.infos = [];
+												socket.emit('add_friend',obj);
+											});
+											users.find({'email':user_email}).toArray(function(err,docs){
+												var obj = docs[0];
+												delete obj.password;
+												obj.unread = 0;
+												obj.infos = [];
+												if(data.email in sockets)
+													sockets[data.email].emit('add_friend',obj);
+												//todo(client) when client handle add_friend event, it should check and remove requests
+											});
+									})
+								}
+							});
+						}
+						//if no other person's request
+						else{
+							//check our request, if has return false, if hasn't create it and return true
+							requests.find({'giver':user_email,'accepter':data.email}).toArray(function(err,docs){
+								if(docs.length === 1)
+									socket.emit('add_friend_res',{'res':false});
+								else{
+									//create request
+									requests.insertMany([{'giver':user_email,'accepter':data.email}],function(err,result){
+										//send signal to both client
+										if(data.email in sockets){
+											users.find({'email':user_email}).toArray(function(err,docs){
+												var obj = docs[0];
+												delete obj.password;
+												sockets[data.email].emit('add_request',obj);
+											});
+										}
+									});
+								}
+							});
+						}
+					});
+				}
+			});
+		}
 	});
 
-	//todo
+	//delete friend
 	socket.on('delete_friend',function(data){
+		if(checkToken(data.token)){
+			var infos = global_db.collection('infos');
+			var from = user_email>data.email?user_email:data.email;
+			var to = user_email>data.email?data.email:user_email;
+			infos.deleteOne({'from':from,'to':to},function(err,result){
+				//info both client to delete friend
+				socket.emit('delete_friend',{'email':data.email});
+				if(data.email in sockets)
+					sockets[data.email].emit('delete_friend',{'email':user_email});
+			});
+		}
 	});
 
-	//todo
-	socket.on('handle_friend_request',function(data){
+	//reject friend request
+	socket.on('reject_friend_request',function(data){
+		if(checkToken(data.token)){
+			var requests = global_db.collection('requests');
+			requests.deleteOne({'giver':data.email,'accepter':user_email},function(err,result){});
+		}
 	});
 });
 

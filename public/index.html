@@ -9,14 +9,8 @@
 					alert('login rejected');
 				else{
 					token = data.token;
-					socket.emit('change_password',{'password':'111111','token':token});
+					socket.emit('add_friend',{email:'b@qq.com',token:token});
 				}
-			});
-			socket.on('password_res',function(data){
-				if(data.res)
-					alert('password is changed');
-				else
-					alert('password changing faild');
 			});
 			socket.emit('login',{email:'a@qq.com',password:'111111'});
 		</script>
