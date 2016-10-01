@@ -18,8 +18,6 @@ var io = require('socket.io')(http);
 io.on('connection',function(socket){
 	var user_email = '';
 	var user_token = '';
-	//true friend not include confirming status
-	var friends = [];
 
 	//token check function
 	function logout(){
@@ -27,7 +25,6 @@ io.on('connection',function(socket){
 		delete sockets[user_email];
 		user_email = '';
 		user_token = '';
-		friends = [];
 	}
 	function checkToken(token){
 		if(user_token === token)
@@ -36,6 +33,22 @@ io.on('connection',function(socket){
 			logout();
 			return false;
 		}
+	}
+	function checkFriend(from,to,callback){
+		var infos = global_db.collection('infos');
+		infos.find({'from':from,'to':to}).toArray(function(err,docs){
+			if(docs.length === 1)
+				callback(docs[0]);
+		});
+	}
+	function getFriends(callback){
+		var infos = global_db.collection('infos');
+		infos.find({$or:[{'from':user_email},{'to':user_email}]}).toArray(function(err,docs){
+			docs.forEach(function(doc){
+				//call callback with friends' email
+				callback(doc.from === user_email?doc.to:doc.from);
+			});
+		});
 	}
 
 	//register handler
@@ -56,9 +69,9 @@ io.on('connection',function(socket){
 
 	//login handler
 	socket.on('login',function(data){
-			var users = global_db.collection('users');
-			var infos = global_db.collection('infos');
-			users.find({'email':data.email,'password':data.password}).toArray(function(err,docs){
+		var users = global_db.collection('users');
+		var infos = global_db.collection('infos');
+		users.find({'email':data.email,'password':data.password}).toArray(function(err,docs){
 			if(err||docs.length===0)
 				socket.emit('login_res',{'res':false});
 			else{
@@ -66,36 +79,109 @@ io.on('connection',function(socket){
 				var sha1 = crypto.createHash('sha1');
 				user_token = sha1.update(data.email+data.password+Date.now()).digest('hex');
 				sockets[user_email] = socket;
-				//friends array would be made
-				infos.find({$or:[{'from':user_email},{'to':user_email}]}).toArray(function(err,docs){
-					if(!err){
-						docs.forEach(function(doc){
-							friends.push(doc.from === user_email?doc.to:doc.from);
-						});
-						socket.emit('login_res',{'res':true,'token':user_token});
-					}
-					else
-						socket.emit('login_res',{'res':false});
-				});
+				socket.emit('login_res',{'token':user_token,'res':true});
 			}
 		});
 	});
 
-	//todo
 	socket.on('get_friend_list',function(data){
 		//return friendlist and unread infomatin count
+		if(checkToken(data.token)){
+			var obj = {};
+			var users = global_db.collection('users');
+			users.find({'email':user_email}).toArray(function(err,docs){
+				obj.name = docs[0].name;
+				obj.avatar = docs[0].avatar;
+				obj.email = user_email;
+				obj.requests = [];
+				obj.friends = [];
+				var requests = global_db.collection('requests');
+				requests.find({accepter:user_email}).toArray(function(err,docs){
+					var req_res = [];
+					docs.forEach(function(doc){
+						req_res.push(doc.giver);
+					});
+					users.find({'email':{$in:req_res}}).toArray(function(err,docs){
+						docs.forEach(function(doc){
+							delete doc.password;
+							obj.requests.push(doc);
+						});
+						var infos = global_db.collection('infos');
+						infos.find({$or:[{'from':user_email},{'to':user_email}]}).toArray(function(err,docs){
+							var query = [];
+							var helper = {};
+							docs.forEach(function(doc){
+								var temp_obj = {};
+								temp_obj.email = doc.from === user_email?doc.to:doc.from;
+								temp_obj.unread = doc.from === user_email?doc.to_unread:doc.from_unread;
+								temp_obj.infos = [];
+								obj.friends.push(temp_obj);
+								query.push(temp_obj.email);
+								helper[temp_obj.email]=temp_obj;
+							});
+							users.find({email:{$in:query}}).toArray(function(err,docs){
+								docs.forEach(function(doc){
+									helper[doc.email].name = doc.name;
+									helper[doc.email].avatar = doc.avatar;
+								});
+								socket.emit('friend_list',obj);
+							});
+						});
+					});
+				});
+			});
+		}
 	});
 
-	//todo
 	//get information by given number
 	socket.on('get_info',function(data){
+		if(checkToken(data.token)){
+			var from  = user_email>data.email?user_email:data.email;
+			var to = user_email>data.email?data.email:user_email;
+			checkFriend(from,to,function(doc){
+				var infos_res = doc.infos.slice(data.begin-1,data.begin+data.size-1);
+				var obj = {};
+				obj.infos = infos_res;
+				obj.email = data.email;
+				socket.emit('new_info',obj);
+			});
+		}
 	});
-	//todo
 	socket.on('get_unread_info',function(data){
+		if(checkToken(data.token)){
+			var from  = user_email>data.email?user_email:data.email;
+			var to = user_email>data.email?data.email:user_email;
+			checkFriend(from,to,function(doc){
+				var infos = global_db.collection('infos');
+				var setobj = user_email>data.email?{$set:{'from_unread':0}}:{$set:{'to_unread':0}};
+				infos.updateOne({'from':from,'to':to},setobj,function(err,result){
+					var infos_res = doc.infos.slice(0,user_email>data.email?doc.from_unread:doc.to_unread);
+					var obj = {};
+					obj.infos = infos_res;
+					obj.email = data.email;
+					socket.emit('new_unread_info',obj);
+				});
+			})
+		}
 	});
 
-	//todo
 	socket.on('send_info',function(data){
+		if(checkToken(data.token)){
+			var from = user_email>data.email?user_email:data.email;
+			var to = user_email>data.email?data.email:user_email;
+			checkFriend(from,to,function(doc){
+				var infos_res = doc.infos;
+				infos_res.unshift(data.info);
+				var infos = global_db.collection('infos');
+				infos.updateOne({'from':from,'to':to},{$set:{'infos':infos_res,'from_unread':doc.from_unread+1,'to_unread':doc.to_unread+1}},function(err,result){
+					//emit both client
+					socket.emit('send_res',{'email':data.email});
+					if(data.email in sockets){
+						sockets[data.email].emit('unread_tip',{'email':user_email,'counts':user_email>data.email?doc.to_unread+1:doc.from_unread+1});
+					}
+				});
+			});
+		}
 	});
 
 	//handle set avatar request
@@ -108,9 +194,9 @@ io.on('connection',function(socket){
 					if(err)
 						socket.emit('avatar_res',{'res':false});
 					else{
-						friends.forEach(function(friend){
-							if(friend in sockets)
-								sockets[friend].emit('change_avatar',{'who':user_email,'avatar':data.avatar});
+						getFriends(function(friend_email){
+							if(friend_email in sockets)
+								sockets[friend_email].emit('change_avatar',{'who':user_email,'avatar':data.avatar});
 						});
 						socket.emit('avatar_res',{'res':true,'avatar':data.avatar});
 					}
@@ -177,8 +263,9 @@ io.on('connection',function(socket){
 												delete obj.password;
 												obj.unread = 0;
 												obj.infos = [];
-												if(data.email in sockets)
+												if(data.email in sockets){
 													sockets[data.email].emit('add_friend',obj);
+												}
 												//todo(client) when client handle add_friend event, it should check and remove requests
 											});
 									})

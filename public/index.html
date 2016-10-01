@@ -9,8 +9,11 @@
 					alert('login rejected');
 				else{
 					token = data.token;
-					socket.emit('add_friend',{email:'b@qq.com',token:token});
+					socket.emit('get_friend_list',{token:token});
 				}
+			});
+			socket.on('friend_list',function(data){
+				console.log(data);
 			});
 			socket.emit('login',{email:'a@qq.com',password:'111111'});
 		</script>
