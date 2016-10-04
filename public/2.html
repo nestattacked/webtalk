@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			var socket = io();
+			var token = '';
+			socket.on('login_res',function(data){
+				if(!data.res)
+					alert('login rejected');
+				else{
+					token = data.token;
+					socket.emit('get_info',{token:token,email:'a@qq.com',start:0,length:1});
+				}
+			});
+			socket.on('infos',function(data){
+				console.log(data);
+			});
+			socket.emit('login',{email:'b@qq.com',password:'111111'});
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
