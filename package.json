@@ -3,13 +3,30 @@
   "version": "0.0.1",
   "description": "",
   "author": "nestattacked",
+  "scripts": {
+    "build": "gulp",
+    "run": "node server/server.js"
+  },
   "dependencies": {
+    "babel-plugin-transform-object-assign": "^6.8.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.0",
+    "compression": "^1.6.2",
     "crypto": "0.0.3",
     "express": "^4.14.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
     "gulp-clean": "^0.3.2",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
     "mongodb": "^2.2.10",
-    "socket.io": "^1.4.8"
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2",
+    "react-redux": "^4.4.5",
+    "redux": "^3.6.0",
+    "socket.io": "^1.4.8",
+    "vinyl-source-stream": "^1.1.0"
   }
 }

@@ -4,7 +4,9 @@ var config = require('./config');
 //create server with express,socketio
 //create express entity
 var express = require('express');
+var compression = require('compression');
 var app = express();
+app.use(compression());
 app.use(express.static('public'));
 //create http server with express entity
 var http = require('http').Server(app);
