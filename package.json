@@ -6,6 +6,9 @@
   "dependencies": {
     "crypto": "0.0.3",
     "express": "^4.14.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-clean": "^0.3.2",
     "mongodb": "^2.2.10",
     "socket.io": "^1.4.8"
   }
