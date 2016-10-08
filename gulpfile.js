@@ -31,7 +31,7 @@ gulp.task('clean',function(){
 });
 
 gulp.task('compile',function(){
-	return browserify('./client/app.js')
+	return browserify('./client/index.js')
 	.transform(babelify,{presets:['es2015','react'],plugins:['transform-object-assign']})
 	.bundle()
 	.pipe(source('bundle.js'))

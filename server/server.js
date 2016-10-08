@@ -1,5 +1,5 @@
 //import config
-var config = require('./config');
+var config = require('../config');
 
 //create server with express,socketio
 //create express entity

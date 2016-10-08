@@ -1,15 +1,9 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var Redux = require('redux');
 var ReactRedux = require('react-redux');
-
-var createStore = Redux.createStore;
 var Provider = ReactRedux.Provider;
-
-var reducer = require('./reducer');
-var App = require('./container/app');
-
-var store = createStore(reducer);
+var App = require('./container/App');
+var store = require('./store');
 
 function ready(){
 	ReactDOM.render(
@@ -21,3 +15,6 @@ function ready(){
 }
 
 window.onload = ready;
+window.onresize = function(){
+	store.dispatch({type:'resize'});
+};

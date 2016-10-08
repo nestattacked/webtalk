@@ -65,7 +65,7 @@ module.exports = function(io,db,config){
 		socket.on('login',function(data){
 			users.find({email:data.email,password:data.password}).toArray(function(err,docs){
 				if(err||docs.length===0)
-					socket.emit('login_res',{res:false});
+					socket.emit('login_res',{res:false,email:data.email});
 				else{
 					//situation that email has alreay login was considered
 					//if email is online
@@ -226,7 +226,7 @@ module.exports = function(io,db,config){
 		});
 
 		//data:{token:'kdfj',email:'xxx@qq.com',start:11,length:3} note:start begin from 0
-		//event:infos:{infos:['f\1\\\xx','txx','fxx'],start:11}
+		//event:infos:{infos:['f\1\\\xx','txx','fxx'],start:11,email:'xxx@qq.com'}
 		socket.on('get_info',function(data){
 			if(checkToken(data.token)){
 				var find_obj = {};
@@ -245,8 +245,9 @@ module.exports = function(io,db,config){
 					var info_res = doc.infos.slice(data.start,data.start+data.length);
 					//get number of readed infos
 					var unread = user_email>data.email?doc.from_unread:doc.to_unread;
-					var readed = data.start + data.length - doc.length + unread;
+					var readed = data.start + data.length - doc.infos.length + unread;
 					readed = readed>0?readed:0;
+					readed = readed>data.length?data.length:readed;
 					var new_unread = unread - readed;
 					//update infos unread
 					var update_obj = {};
@@ -264,7 +265,7 @@ module.exports = function(io,db,config){
 						set_obj.to_unread = new_unread;
 					}
 					infos.updateOne(update_obj,{$set:set_obj},function(err,result){
-						socket.emit('infos',{infos:info_res,start:data.start});
+						socket.emit('infos',{infos:info_res,start:data.start,email:data.email});
 					});
 				});
 			}
@@ -308,11 +309,13 @@ module.exports = function(io,db,config){
 		});
 
 		//data:{token:'kdfj'}
-		//event:data_res:{avatar:1,email:'xxx@qq.com',name:'kkj',avatar_counts:10,emotion_counts:10,requests:[{email:'xxx@qq.com',name:'xxx',avatar:1}],friends:[{email:'xxx@qq.com',unread:10,avatar:1,name:'xxx',infos:[],unread_ptr:1}]}
+		//event:data_res:{token:'xxxkdf',avatar:1,email:'xxx@qq.com',name:'kkj',avatar_counts:10,emotion_counts:10,requests:[{email:'xxx@qq.com',name:'xxx',avatar:1}],friends:[{email:'xxx@qq.com',unread:10,avatar:1,name:'xxx',infos:[],unread_ptr:1,read_ptr:1}]}
 		socket.on('get_data',function(data){
 			if(checkToken(data.token)){
 				var res_obj = {};
+				res_obj.token = data.token;
 				users.find({email:user_email}).toArray(function(err,docs){
+					//fill user's data
 					var doc = docs[0];
 					res_obj.avatar = doc.avatar;
 					res_obj.name = doc.name;
@@ -325,6 +328,7 @@ module.exports = function(io,db,config){
 						var givers = [];
 						docs.forEach(function(doc){givers.push(doc.giver);});
 						users.find({email:{$in:givers}}).toArray(function(err,docs){
+							//fill request data
 							docs.forEach(function(doc){
 								var temp = {};
 								temp.email = doc.email;
@@ -336,14 +340,19 @@ module.exports = function(io,db,config){
 								var friends = [];
 								var helper = {};
 								docs.forEach(function(doc){
+									var new_friend;
 									if(doc.from === user_email){
 										friends.push(doc.to);
-										helper[doc.to] = res_obj.friends.push({email:doc.to,unread:doc.to_unread,infos:[],unread_ptr:doc.infos.length-doc.to_unread});
+										new_friend = {email:doc.to,unread:doc.from_unread,infos:[],unread_ptr:doc.infos.length-doc.from_unread};
+										helper[doc.to] = new_friend;
 									}
 									else{
 										friends.push(doc.from);
-										helper[doc.from] = res_obj.friends.push({email:doc.from,unread:doc.from_unread,infos:[],unread_ptr:doc.infos.length-doc.from_unread});
+										new_friend = {email:doc.from,unread:doc.to_unread,infos:[],unread_ptr:doc.infos.length-doc.to};
+										helper[doc.from] = new_friend;
 									}
+									new_friend.read_ptr = new_friend.unread_ptr;
+									res_obj.friends.push(new_friend);
 								});
 								users.find({email:{$in:friends}}).toArray(function(err,docs){
 									docs.forEach(function(doc){
