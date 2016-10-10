@@ -40,6 +40,6 @@ gulp.task('compile',function(){
 
 gulp.task('getcore',['compile'],function(){
 	gulp.src('./public/bundle.js')
-	.pipe(uglify())
+	//.pipe(uglify())
 	.pipe(gulp.dest('./public/'));
 });

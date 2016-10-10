@@ -3,12 +3,11 @@ var Friend = require('../container/Friend');
 
 var Friends = React.createClass({
 	render:function(){
-		console.log('friends rendering');
 		var device = this.props.mobile?'mobile':'pc';
 		var showed = ((this.props.page==='friend'&&this.props.mobile)?'friend_showed':'');
 		return (
 			<div className={device+'_friends '+showed}>
-				<div className="up"><img src="/up.png"/></div>
+				<h1 className="friends_title">好友</h1>
 					<div className="friends_list">
 						{
 							this.props.friends.map(function(friend){
@@ -16,7 +15,6 @@ var Friends = React.createClass({
 							})
 						}
 					</div>
-				<div className="down"><img src="/down.png"/></div>
 			</div>
 		);
 	}

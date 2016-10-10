@@ -6,7 +6,6 @@ var Setting = require('../container/Setting');
 
 var Core = React.createClass({
 	render:function(){
-	console.log('core rendering');
 		return (
 			<div className={this.props.mobile?'mobile_core':'pc_core'}>
 				<Menu/>

@@ -4,8 +4,7 @@
   "description": "",
   "author": "nestattacked",
   "scripts": {
-    "build": "gulp",
-    "run": "node server/server.js"
+	"start": "gulp && node server/server.js"
   },
   "dependencies": {
     "babel-plugin-transform-object-assign": "^6.8.0",

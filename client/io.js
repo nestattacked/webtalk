@@ -22,7 +22,13 @@ socket.on('disconnect',function(){
 	store.dispatch({type:'logout'});
 });
 socket.on('infos',function(data){
-	store.dispatch({type:'infos',infos:data.infos,start:data.start,email:data.email});
+	store.dispatch({type:'infos',is_res:false,infos:data.infos,start:data.start,email:data.email});
+});
+socket.on('info_tip',function(data){
+	store.dispatch({type:'info_tip',email:data.who});
+});
+socket.on('info_res',function(data){
+	store.dispatch({type:'infos',is_res:true,start:data.start,email:data.who,infos:[data.info]});
 });
 
 module.exports = socket;

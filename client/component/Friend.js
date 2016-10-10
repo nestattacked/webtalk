@@ -9,7 +9,6 @@ var Friend = React.createClass({
 		}
 	},
 	render:function(){
-		console.log('friend rendering');
 		return (
 			<div onClick={this.readInfo} className="friend">
 				<div className="list_avatar" style={{backgroundPositionX:(40*(this.props.friend.avatar-1))}}>

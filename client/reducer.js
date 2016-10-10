@@ -2,6 +2,7 @@ module.exports = function(state,action){
 	//initial state
 	if(typeof state === 'undefined')
 		state = {
+			on_emotion:false,
 			talk_to:'',
 			tip:[],
 			login_email:'',
@@ -17,9 +18,40 @@ module.exports = function(state,action){
 		};
 	//deal with action
 	switch(action.type){
+		case 'info_tip':
+			return (function(){
+				var obj = Object.assign({},state);
+				obj.friends = obj.friends.concat();
+				for(var i=0;i<obj.friends.length;i++){
+					if(obj.friends[i].email === action.email){
+						obj.friends[i].unread = obj.friends[i].unread+1;
+						if(state.talk_to === action.email){
+							var socket = require('./io');
+							console.log('client require infomation and length is '+obj.friends[i].unread);
+							socket.emit('get_info',{token:state.token,email:action.email,start:obj.friends[i].unread_ptr,length:obj.friends[i].unread});
+						}
+						break;
+					}
+				}
+				return obj;
+			})();
+		//fetch history action{action.email}
+		case 'fetch_history':
+			return (function(){
+				var obj = Object.assign({},state);
+				obj.friends = obj.friends.concat();
+				for(var i=0;i<obj.friends.length;i++){
+					if(obj.friends[i].email === action.email){
+						obj.friends[i].fetching_history = true;
+						break;
+					}
+				}
+				return obj;
+			}());
 		case 'infos':
 			//infos,start,email
-			var res = (function(){
+			return (function(){
+				console.log('action.infos.length:'+action.infos.length);
 				var obj = Object.assign({},state);
 				obj.friends = state.friends.concat();
 				for(var i=0;i<obj.friends.length;i++){
@@ -43,20 +75,24 @@ module.exports = function(state,action){
 								new_infos[l] = '';
 						}
 						friend.infos = new_infos;
+						if(!action.is_res){
+							var readed = (action.start+action.infos.length-friend.unread_ptr);
+							if(readed<0)
+								readed=0;
+							friend.unread = friend.unread - readed;
+						}
+						friend.fetching_history = false;
 						friend.unread_ptr = max;
 						friend.read_ptr = min;
-						friend.unread = friend.unread - action.infos.length;
 						return obj;
 					}
 				}
 			})();
-			console.log(res);
-			return res;
 		case 'talk_to':
 			return Object.assign({},state,{talk_to:action.talk_to});
 		//{type:'logout'}
 		case 'logout':
-			return Object.assign({},state,{tip:['你已被登出系统'],login_state:'unlogin',page:'login'});
+			return Object.assign({},state,{tip:['你已被登出系统'],login_state:'unlogin',page:'login',talk_to:''});
 		//{type:'add_tip',tip:'xx'}
 		case 'add_tip':
 			return Object.assign({},state,{tip:state.tip.concat(action.tip)});

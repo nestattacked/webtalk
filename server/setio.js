@@ -229,6 +229,8 @@ module.exports = function(io,db,config){
 		//event:infos:{infos:['f\1\\\xx','txx','fxx'],start:11,email:'xxx@qq.com'}
 		socket.on('get_info',function(data){
 			if(checkToken(data.token)){
+				console.log(user_email+' is getting info');
+				console.log(data);
 				var find_obj = {};
 				if(user_email>data.email){
 					find_obj.from = user_email;
@@ -245,9 +247,18 @@ module.exports = function(io,db,config){
 					var info_res = doc.infos.slice(data.start,data.start+data.length);
 					//get number of readed infos
 					var unread = user_email>data.email?doc.from_unread:doc.to_unread;
-					var readed = data.start + data.length - doc.infos.length + unread;
-					readed = readed>0?readed:0;
-					readed = readed>data.length?data.length:readed;
+					var head = data.start+data.length;
+					var tail = data.start;
+					var readed;
+					if(head<=doc.infos.length-unread)
+						readed = 0;
+					else if(tail>=doc.infos.length)
+						readed = 0;
+					else{
+						readed = head - tail;
+						if(readed>unread)
+							readed = unread;
+					}
 					var new_unread = unread - readed;
 					//update infos unread
 					var update_obj = {};
@@ -276,7 +287,6 @@ module.exports = function(io,db,config){
 		socket.on('send_info',function(data){
 			if(checkToken(data.token)){
 				//update mongodb
-				//todo
 				var update_obj = {};
 				var inc_obj = {};
 				var info_head = '';
@@ -297,7 +307,7 @@ module.exports = function(io,db,config){
 					infos.updateOne(update_obj,{$push:{infos:info_head+data.info}},function(err,result){
 						infos.find(update_obj).toArray(function(err,docs){
 							if(docs.length !== 0){
-								socket.emit('info_res',{who:data.to,start:docs[0].infos.length-1,info:data.info});
+								socket.emit('info_res',{who:data.to,start:docs[0].infos.length-1,info:(info_head+data.info)});
 								if(data.to in sockets){
 									sockets[data.to].emit('info_tip',{who:user_email});
 								}
@@ -309,7 +319,7 @@ module.exports = function(io,db,config){
 		});
 
 		//data:{token:'kdfj'}
-		//event:data_res:{token:'xxxkdf',avatar:1,email:'xxx@qq.com',name:'kkj',avatar_counts:10,emotion_counts:10,requests:[{email:'xxx@qq.com',name:'xxx',avatar:1}],friends:[{email:'xxx@qq.com',unread:10,avatar:1,name:'xxx',infos:[],unread_ptr:1,read_ptr:1}]}
+		//event:data_res:{token:'xxxkdf',avatar:1,email:'xxx@qq.com',name:'kkj',avatar_counts:10,emotion_counts:10,requests:[{email:'xxx@qq.com',name:'xxx',avatar:1}],friends:[{email:'xxx@qq.com',unread:10,avatar:1,name:'xxx',infos:[],unread_ptr:1,read_ptr:1,fetching_history:false}]}
 		socket.on('get_data',function(data){
 			if(checkToken(data.token)){
 				var res_obj = {};
@@ -324,11 +334,11 @@ module.exports = function(io,db,config){
 					res_obj.emotion_counts = config.emotion_counts;
 					res_obj.requests = [];
 					res_obj.friends = [];
+					//fill request data
 					requests.find({accepter:user_email}).toArray(function(err,docs){
 						var givers = [];
 						docs.forEach(function(doc){givers.push(doc.giver);});
 						users.find({email:{$in:givers}}).toArray(function(err,docs){
-							//fill request data
 							docs.forEach(function(doc){
 								var temp = {};
 								temp.email = doc.email;
@@ -336,6 +346,7 @@ module.exports = function(io,db,config){
 								temp.avatar = doc.avatar;
 								res_obj.requests.push(temp);
 							});
+							//find all friend
 							infos.find({$or:[{from:user_email},{to:user_email}]}).toArray(function(err,docs){
 								var friends = [];
 								var helper = {};
@@ -348,10 +359,11 @@ module.exports = function(io,db,config){
 									}
 									else{
 										friends.push(doc.from);
-										new_friend = {email:doc.from,unread:doc.to_unread,infos:[],unread_ptr:doc.infos.length-doc.to};
+										new_friend = {email:doc.from,unread:doc.to_unread,infos:[],unread_ptr:doc.infos.length-doc.to_unread};
 										helper[doc.from] = new_friend;
 									}
 									new_friend.read_ptr = new_friend.unread_ptr;
+									new_friend.fetching_history = false;
 									res_obj.friends.push(new_friend);
 								});
 								users.find({email:{$in:friends}}).toArray(function(err,docs){

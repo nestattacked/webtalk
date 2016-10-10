@@ -5,7 +5,7 @@ var Menu = React.createClass({
 		var device = this.props.mobile?'mobile':'pc';
 		return (
 			<div className={device+'_menu'}>
-				<img className={device+'_menu_img'} src={'/'+device+'_menu_img.png'}/>
+				<img className={device+'_menu_img'} src={'/'+device+'_welcome_brand.png'}/>
 				<h1 className={device+'_menu_title'}>WebTalk</h1>
 				<div className={device+'_buttons'}>
 					<button onClick={this.props.chooseFriends} className={device+'_menu_button button button_'+(this.props.page==='friend'?'on':'off')}>好友</button>
