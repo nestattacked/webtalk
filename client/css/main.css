@@ -8,6 +8,7 @@ html,body{
 	height:100%;
 }
 #app{
+	overflow:hidden;
 	height:100%;
 	min-height:480px;
 	position:relative;
@@ -32,7 +33,6 @@ html,body{
 	font-size:16px;
 	width:70px;
 	height:30px;
-	line-height:30px;
 	margin-top:15px;
 }
 .button{
@@ -92,7 +92,6 @@ html,body{
 	margin-top:20px;
 	width:80px;
 	height:40px;
-	line-height:40px;
 	font-size:16px;
 }
 .pc_welcome_chooser_button[disabled]{
@@ -133,7 +132,6 @@ html,body{
 	display:block;
 	width:70px;
 	height:40px;
-	line-height:40px;
 	margin:auto;
 	margin-top:25px;
 	font-size:16px;
@@ -195,4 +193,280 @@ html,body{
 }
 .mobile_welcome_chooser_button[disabled]{
 	cursor:not-allowed;
+}
+.mobile_menu_title{
+	display:none;
+}
+.mobile_menu{
+	position:relative;
+	height:70px;
+	width:100%;
+	max-width:340px;
+	margin:auto;
+}
+.mobile_menu_img{
+	position:absolute;
+	top:15px;
+	left:15px;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+}
+.mobile_buttons{
+	font-size:0;
+	margin-left:80px;
+	margin-right:15px;
+	padding-top:15px;
+	height:30px;
+	text-align:justify;
+}
+.mobile_buttons:after{
+	content:"";
+	display:inline-block;
+	width:100%;
+}
+.mobile_menu_button{
+	width:70px;
+	height:30px;
+	font-size:16px;
+}
+.mobile_friends,.pc_friends{
+	width:130px;
+	border-radius:5px;
+	border:2px solid black;
+	padding:0 10px 10px;
+	overflow:hidden;
+	background-color:#eee;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+}
+.mobile_friends{
+	position:absolute;
+	top:60px;
+	left:-190px;
+	bottom:15px;
+}
+.friend_showed{
+	left:15px;
+}
+.friends_title{
+	text-align:center;
+	height:40px;
+	line-height:40px;
+	font-size:22px;
+	font-weight:normal;
+	color:black;
+	border-bottom:2px solid #009245;
+}
+.friends_list{
+	width:170px;
+	position:absolute;
+	top:40px;
+	left:10px;
+	bottom:10px;
+}
+.friend{
+	width:130px;
+	height:40px;
+	margin:15px 10px 0;
+	line-height:40px;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.list_avatar{
+	position:relative;
+	display:inline-block;
+	width:40px;
+	height:40px;
+	border-radius:50%;
+	background-image:url(avatar.png);
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+	margin-right:10px;
+	vertical-align:top;
+}
+.list_name{
+	font-size:18px;
+	color:black;
+}
+.info_tip{
+	height:12px;
+	line-height:12px;
+	position:absolute;
+	padding:6px;
+	background-color:#de1917;
+	border-radius:4px;
+	color:white;
+	top:-5px;
+	right:-5px;
+}
+.mobile_talk{
+	position:absolute;
+	top:60px;
+	left:170px;
+	bottom:15px;
+	width:100%;
+}
+.talk_showed{
+	left:0;
+}
+.talk_infos{
+	position:absolute;
+	left:15px;
+	right:15px;
+	top:0;
+	bottom:55px;
+	border-radius:5px;
+	border:2px solid black;
+	background-color:#eee;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+	padding:0 15px 10px;
+}
+.talk_info_box{
+	position:absolute;
+	left:15px;
+	right:15px;
+	top:50px;
+	bottom:0;
+	overflow:auto;
+}
+.talk_title{
+	position:absolute;
+	left:15px;
+	right:15px;
+	top:0;
+	height:40px;
+	line-height:40px;
+	text-align:center;
+	font-size:22px;
+	border-bottom:2px solid #009245;
+}
+.history_button{
+	width:100%;
+	height:30px;
+	background-color:grey;
+	border:1px solid #eee;
+	border-radius:5px;
+	outline:none;
+}
+.talk_info{
+	position:relative;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+.talk_info:after{
+	display:block;
+	content:'';
+	clear:both;
+	height:0;
+	overflow:hidden;
+}
+.talk_avatar_left,.talk_avatar_right{
+	position:absolute;
+	width:40px;
+	height:40px;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+	border-radius:20px;
+	background-image:url(avatar.png);
+}
+.talk_avatar_left{
+	left:0;
+}
+.talk_avatar_right{
+	right:0;
+}
+.talk_content_left,.talk_content_right{
+	word-break:break-all;
+	display:inline-block;
+	font-size:16px;
+	line-height:26px;
+	padding:10px;
+	border-radius:4px;
+	border:1px solid #aaa;
+	margin:0 55px;
+}
+.talk_content_left{
+	float:left;
+	background-color:#fff;
+}
+.talk_content_right{
+	float:right;
+	background-color:#72ec4c;
+}
+.function_bar{
+	position:absolute;
+	left:15px;
+	right:15px;
+	bottom:0;
+	height:40px;
+}
+.bar_off{
+	display:none;
+}
+.send_bar,.emotion_bar{
+	position:relative;
+	width:100%;
+	height:100%;
+}
+.send_bar_input,.emotion_bar_emotions{
+	position:relative;
+	height:38px;
+	margin-right:80px;
+	background-color:white;
+	border-radius:4px;
+	border:1px solid #222;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.5);
+}
+.emotion_bar_emotions{
+	overflow:hidden;
+}
+.send_bar_send,.emotion_bar_return{
+	background-color:green;
+	position:absolute;
+	top:0;
+	right:0;
+	height:40px;
+	width:70px;
+}
+.emotion_button{
+	position:absolute;
+	top:4px;
+	right:4px;
+	width:30px;
+	height:30px;
+	background-image:url(emotion_button.png);
+	outline:none;
+	cursor:pointer;
+	border:none;
+	background-color:transparent;
+}
+.send_bar_content_box{
+	height:38px;
+	margin-right:45px;
+	overflow:hidden;
+}
+.send_bar_content{
+	font-size:16px;
+	height:38px;
+	outline:none;
+	line-height:38px;
+	white-space:nowrap;
+	padding:0 10px;
+}
+.emotion_bar_emotions_box{
+	overflow:auto;
+	padding:0 10px;
+	height:38px;
+	line-height:38px;
+	font-size:0;
+	text-align:justify;
+}
+.info_emotion,.content_emotion{
+	display:inline-block;
+	vertical-align:top;
+	width:20px;
+	height:20px;
+	background-image:url(emotion.png);
+}
+.info_emotion{
+	margin:3px 2px;
+}
+.content_emotion{
+	margin:9px 2px;
 }

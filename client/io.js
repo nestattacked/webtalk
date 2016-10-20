@@ -1,5 +1,6 @@
 var store = require('./store');
 var config = require('../config');
+var io = require('socket.io-client');
 var socket = io.connect(config.io_url);
 
 socket.on('register_res',function(data){

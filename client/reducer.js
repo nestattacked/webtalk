@@ -51,7 +51,6 @@ module.exports = function(state,action){
 		case 'infos':
 			//infos,start,email
 			return (function(){
-				console.log('action.infos.length:'+action.infos.length);
 				var obj = Object.assign({},state);
 				obj.friends = state.friends.concat();
 				for(var i=0;i<obj.friends.length;i++){

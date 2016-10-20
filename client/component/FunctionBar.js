@@ -9,8 +9,11 @@ var FunctionBar = React.createClass({
 		this.setState({on_emotion:false});
 	},
 	encode:function(str){
-		var res = str.replace(/<img class="content_emotion" style="background:url(emotion.png) no-repeat (\d+)px 0"\/>/g,'\\$1\\');
-		res = res.replace(/<div><br><\/div>/,'\n');
+		console.log('before encode: '+str);
+		var res = str.replace(/<img src="blank.png" class="content_emotion" style="background:url\(emotion.png\) no-repeat -(\d+)px 0">/g,'\\$1\\');
+		console.log('after encode: '+res);
+		res = res.replace(/<div>(.*)<\/div>/,'\n$1');
+		res = res.replace(/&nbsp;/g,' ');
 		res = res.replace(/&gt;/g,'>');
 		res = res.replace(/&lt;/g,'<');
 		res = res.replace(/&amp;/g,'&');
@@ -24,7 +27,9 @@ var FunctionBar = React.createClass({
 	},
 	addEmotion:function(e){
 		var index = e.target.getAttribute('data-index');
-		this.refs.content.innerHTML = this.refs.content.innerHTML + '<img class="content_emotion" style="background:url(emotion.png) no-repeat '+index*20+'px 0/>"';
+		console.log('index '+index+' is clicked');
+		console.log(this.refs.content);
+		this.refs.content.innerHTML = this.refs.content.innerHTML + '<img src="blank.png" class="content_emotion" style="background:url(emotion.png) no-repeat -'+index*20+'px 0">';
 	},
 	getInitialState:function(){
 		return {
@@ -34,7 +39,7 @@ var FunctionBar = React.createClass({
 	render:function(){
 		var emotions=[];
 		for(var i=0;i<this.props.emotion_counts;i++){
-			emotions.push(<img onClick={this.addEmotion} data-index={i} className="content_emotion" style={{background:'url(emotion.png) no-repeat '+i*20+'px 0'}}/>);
+			emotions.push(<img src="blank.png" onClick={this.addEmotion} data-index={i} className="content_emotion" style={{background:'url(emotion.png) no-repeat -'+i*20+'px 0'}}/>);
 		}
 		return (
 			<div className="function_bar">
@@ -45,7 +50,7 @@ var FunctionBar = React.createClass({
 						</div>
 						<button onClick={this.chooseEmotion} className="emotion_button"></button>
 					</div>
-					<button className="send_bar_emotion" onClick={this.send}>发送</button>
+					<button className="send_bar_send button" onClick={this.send}>发送</button>
 				</div>
 
 				<div className={'emotion_bar bar_'+(this.state.on_emotion?'on':'off')}>
@@ -54,7 +59,7 @@ var FunctionBar = React.createClass({
 							{emotions}
 						</div>
 					</div>
-					<button onClick={this.chooseSend} className="emotion_bar_return">返回</button>
+					<button onClick={this.chooseSend} className="emotion_bar_return button">返回</button>
 				</div>
 			</div>
 		);

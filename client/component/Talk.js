@@ -10,7 +10,7 @@ var Talk = React.createClass({
 	},
 	render:function(){
 		var device = this.props.mobile?'mobile':'pc';
-		var showed = ((this.props.page==='friend'&&this.props.mobile)?' talk_showed':'');
+		var showed = ((this.props.page==='talk'&&this.props.mobile)?' talk_showed':'');
 		var infos;
 		if((typeof this.props.infos)!=='undefined')
 			infos = this.props.infos.map(function(info){
@@ -24,8 +24,10 @@ var Talk = React.createClass({
 			<div className={device+'_talk'+showed}>
 				<div className="talk_infos">
 					<h1 className="talk_title">{(typeof this.props.friend_name)==='undefined'?'':this.props.friend_name}</h1>
+					<div className="talk_info_box">
 					{(typeof this.props.friend_name)==='undefined'?'':<button onClick={this.getHistory}className="history_button">{this.props.fetching?'获取中':'历史消息'}</button>}
 					{infos}
+					</div>
 				</div>
 				<FunctionBar/>
 			</div>
